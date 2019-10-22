@@ -1,0 +1,41 @@
+version: '3.2'
+services:
+  product-service:
+    depends_on:
+      - "db"
+    build:
+      context: ./product-service
+    command: ["/wait-for-it.sh", "db:8002", "--", "npm", "start"]
+    ports:
+      - "8080:3000"
+    environment:
+      - DATABASE_PASSWORD=complexpassword
+      - DATABASE_HOST=db
+      - test=testvariable  
+    volumes:  
+      - type: bind  
+        source: ./product-service  
+        target: /app
+    networks:  
+      - products
+  db:
+    build: ./product-db
+    restart: always
+    environment:
+      - "MYSQL_ROOT_PASSWORD=complexpassword"
+      - "MYSQL_DATABASE=Products"
+    ports:
+     - "8002:3306"
+    networks:  
+      - products
+  inventory-service:
+    build:
+      context: ./inventory-service
+    ports:
+        - "8081:3000"
+    volumes:  
+      - my-volume:/var/lib/data
+volumes:
+  my-volume:
+networks:
+  products:
